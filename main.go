@@ -14,7 +14,30 @@ func main() {
 	}
 
 	InitDB()
+
+	_, err = DB.Exec(`
+CREATE TABLE IF NOT EXISTS users (
+		id TEXT PRIMARY KEY,
+	name TEXT,
+	email TEXT
+);
+`)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	_, err = DB.Exec(`
+CREATE TABLE IF NOT EXISTS projects (
+	id TEXT PRIMARY KEY,
+	name TEXT,
+	user_id TEXT
+);
+`)
+	if err != nil {
+		log.Fatal(err)
+	}
 	InitDynamo()
+	TestDynamoConnection()
 
 	http.HandleFunc("/users", CreateUser)
 	http.HandleFunc("/get-users", GetUsers)

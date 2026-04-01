@@ -119,33 +119,40 @@ func DeleteProject(w http.ResponseWriter, r *http.Request) {
 }
 
 // ---------------- TASKS (DynamoDB) ----------------
+var TableName = "Tasks"
 
 func CreateTask(w http.ResponseWriter, r *http.Request) {
 	var task Task
 
+	// Decode JSON body
 	if err := json.NewDecoder(r.Body).Decode(&task); err != nil {
-		http.Error(w, err.Error(), 400)
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
+	// Generate UUID for primary key
 	task.TaskID = uuid.New().String()
 
+	// Marshal to DynamoDB attribute values
 	item, err := attributevalue.MarshalMap(task)
 	if err != nil {
-		http.Error(w, err.Error(), 500)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
+	// Put item in DynamoDB
 	_, err = DynamoClient.PutItem(context.TODO(), &dynamodb.PutItemInput{
 		TableName: &TableName,
 		Item:      item,
 	})
 
 	if err != nil {
-		http.Error(w, err.Error(), 500)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
+	// Return the created task as JSON
+	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(task)
 }
 

@@ -13,8 +13,8 @@ type Project struct {
 }
 
 type Task struct {
-	TaskID    string `json:"task_id"`
-	ProjectID string `json:"project_id"`
-	Title     string `json:"title"`
-	Status    string `json:"status"`
+	TaskID    string `json:"task_id" dynamodbav:"task_id"`   // PRIMARY KEY
+	ProjectID string `json:"project_id" dynamodbav:"project_id"`
+	Title     string `json:"title" dynamodbav:"title"`
+	Status    string `json:"status" dynamodbav:"status"`
 }
