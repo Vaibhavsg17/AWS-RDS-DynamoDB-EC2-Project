@@ -3,19 +3,13 @@ package main
 import (
 	"log"
 	"net/http"
-
-	"github.com/joho/godotenv"
+	"os"
 )
 
 func main() {
-	err := godotenv.Load()
-	if err != nil {
-		log.Println("No .env file found (using system env)")
-	}
-
 	InitDB()
 
-	_, err = DB.Exec(`
+	_, err := DB.Exec(`
 CREATE TABLE IF NOT EXISTS users (
 		id TEXT PRIMARY KEY,
 	name TEXT,
@@ -39,6 +33,7 @@ CREATE TABLE IF NOT EXISTS projects (
 	InitDynamo()
 	TestDynamoConnection()
 
+	http.HandleFunc("/health", HealthCheck)
 	http.HandleFunc("/users", CreateUser)
 	http.HandleFunc("/get-users", GetUsers)
 	http.HandleFunc("/delete-user", DeleteUser)
@@ -51,6 +46,11 @@ CREATE TABLE IF NOT EXISTS projects (
 	http.HandleFunc("/get-tasks", GetTasks)
 	http.HandleFunc("/delete-task", DeleteTask)
 
-	log.Println("Server running on :8080 🚀")
-	http.ListenAndServe(":8080", nil)
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080"
+	}
+
+	log.Println("Server started on port", port)
+	log.Fatal(http.ListenAndServe(":"+port, nil))
 }
