@@ -4,34 +4,28 @@ import (
 	"log"
 	"net/http"
 	"os"
+
+	"github.com/joho/godotenv"
 )
 
 func main() {
+
+	// Load env (works locally, ignored in Docker if env already set)
+	err := godotenv.Load()
+	if err != nil {
+		log.Println("No .env file found (using system env)")
+	}
+
+	// Init PostgreSQL (RDS)
 	InitDB()
 
-	_, err := DB.Exec(`
-CREATE TABLE IF NOT EXISTS users (
-		id TEXT PRIMARY KEY,
-	name TEXT,
-	email TEXT
-);
-`)
-	if err != nil {
-		log.Fatal(err)
-	}
+	// Create tables safely (idempotent)
+	createTables()
 
-	_, err = DB.Exec(`
-CREATE TABLE IF NOT EXISTS projects (
-	id TEXT PRIMARY KEY,
-	name TEXT,
-	user_id TEXT
-);
-`)
-	if err != nil {
-		log.Fatal(err)
-	}
+	// Init DynamoDB
 	InitDynamo()
 	TestDynamoConnection()
+
 
 	http.HandleFunc("/health", HealthCheck)
 	http.HandleFunc("/users", CreateUser)
@@ -46,11 +40,15 @@ CREATE TABLE IF NOT EXISTS projects (
 	http.HandleFunc("/get-tasks", GetTasks)
 	http.HandleFunc("/delete-task", DeleteTask)
 
-	port := os.Getenv("PORT")
+port := os.Getenv("PORT")
 	if port == "" {
 		port = "8080"
 	}
 
-	log.Println("Server started on port", port)
-	log.Fatal(http.ListenAndServe(":"+port, nil))
+	log.Println("Server running on :" + port + " 🚀")
+
+	err = http.ListenAndServe(":"+port, nil)
+	if err != nil {
+		log.Fatal(err)
+	}
 }
