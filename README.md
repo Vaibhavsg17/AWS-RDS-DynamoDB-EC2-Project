@@ -105,6 +105,14 @@ go mod tidy
 go run main.go
 ```
 
+---
+
+### 4️⃣ Run the using Docker 
+
+```bash
+docker run --env-file .env -p 8080:8080 task-app
+```
+
 Server will start on:
 
 ```

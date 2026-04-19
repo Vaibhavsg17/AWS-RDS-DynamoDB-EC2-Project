@@ -12,9 +12,6 @@ func main() {
 
 	// Load env (works locally, ignored in Docker if env already set)
 	err := godotenv.Load()
-	if err != nil {
-		log.Println("No .env file found (using system env)")
-	}
 
 	// Init PostgreSQL (RDS)
 	InitDB()
